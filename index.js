@@ -69,8 +69,8 @@ export default class JMessage {
   static logout() {
     return JMessageModule.logout();
   }
-  static sendSingleMessage({name, type, data={}}) {
-    return JMessageModule.sendSingleMessage(JMessage.appKey, name, type, data)
+  static sendSingleMessage({appKey = JMessage.appKey, name, type, data={}}) {
+    return JMessageModule.sendSingleMessage(appKey, name, type, data)
       .then(message => formatMessage(message));
   }
   static sendGroupMessage({gid, type, data={}}) {
