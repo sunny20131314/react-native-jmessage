@@ -377,7 +377,8 @@ RCT_EXPORT_METHOD(allConversations
                         default:
                             break;
                     }
-                    
+
+
                     [result addObject:@{@"id": OPTION_NULL(cid),
                                         @"type": @(conversation.conversationType),
                                         @"typeDesc": typeDesc,
@@ -591,11 +592,14 @@ RCT_EXPORT_METHOD(removeConversation
                  };
     } else if(message.targetType == kJMSGConversationTypeGroup) {
         JMSGGroup *target = message.target;
+
         return @{@"type": @(message.targetType),
                  @"typeDesc": typeDesc,
                  @"name": OPTION_NULL(target.name),
-                 @"displayName": OPTION_NULL(target.displayName)
-                 };
+                 @"gid": OPTION_NULL(target.gid),
+                 @"owner": OPTION_NULL(target.owner),
+                 @"description": OPTION_NULL(target.desc)
+                 };s
     } else {
         return @{};
     }

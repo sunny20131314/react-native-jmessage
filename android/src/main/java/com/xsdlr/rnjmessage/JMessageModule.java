@@ -305,12 +305,16 @@ public class JMessageModule extends ReactContextBaseJavaModule {
             case single:
                 UserInfo userInfo = (UserInfo)message.getTargetInfo();
                 target.putString("name", userInfo.getUserName());
+                target.putString("id", userInfo.getUserName());
                 target.putString("nickname", userInfo.getNickname());
                 break;
             case group:
                 GroupInfo groupInfo = (GroupInfo)message.getTargetInfo();
                 target.putString("name", groupInfo.getGroupName());
-                target.putString("nickname", groupInfo.getGroupDescription());
+                target.putDouble("gid", groupInfo.getGroupID());
+                target.putInt("isNoDisturb", groupInfo.getNoDisturb());
+                target.putString("description", groupInfo.getGroupDescription());
+                target.putString("owner", groupInfo.getGroupOwner());
                 break;
             default:
                 break;
