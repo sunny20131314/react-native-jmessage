@@ -599,7 +599,7 @@ RCT_EXPORT_METHOD(removeConversation
                  @"gid": OPTION_NULL(target.gid),
                  @"owner": OPTION_NULL(target.owner),
                  @"description": OPTION_NULL(target.desc)
-                 };s
+                 };
     } else {
         return @{};
     }
