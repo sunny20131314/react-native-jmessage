@@ -564,13 +564,15 @@ RCT_EXPORT_METHOD(removeConversation
 }
 
 - (NSDictionary *)toDictoryWithMessage:(JMSGMessage *)message {
-    
     return @{@"msgId": message.msgId,
              @"serverMessageId": OPTION_NULL(message.serverMessageId),
              @"from": @{@"type": OPTION_NULL(message.fromType),
                         @"name":OPTION_NULL(message.fromUser.username),
                         @"nickname": OPTION_NULL(message.fromUser.nickname),
                         @"avatar": OPTION_NULL(message.fromUser.avatar),
+                        @"id": OPTION_NULL(message.fromUser.username),
+                        @"appKey": OPTION_NULL(message.fromUser.appKey),
+                        @"isNoDisturb": @(message.fromUser.isNoDisturb),
                         },
              @"target": [self getTargetWithMessage:message],
              @"timestamp": message.timestamp,
@@ -587,9 +589,11 @@ RCT_EXPORT_METHOD(removeConversation
         return @{@"type": @(message.targetType),
                  @"typeDesc": typeDesc,
                  @"name": OPTION_NULL(target.username),
+                 @"id": OPTION_NULL(target.username),
+                 @"appKey": OPTION_NULL(target.appKey),
                  @"nickname": OPTION_NULL(target.nickname),
                  @"avatar": OPTION_NULL(target.avatar),
-                 };
+             };
     } else if(message.targetType == kJMSGConversationTypeGroup) {
         JMSGGroup *target = message.target;
 
@@ -598,6 +602,7 @@ RCT_EXPORT_METHOD(removeConversation
                  @"name": OPTION_NULL(target.name),
                  @"gid": OPTION_NULL(target.gid),
                  @"owner": OPTION_NULL(target.owner),
+                 @"isNoDisturb": @(target.isNoDisturb),
                  @"description": OPTION_NULL(target.desc)
                  };
     } else {

@@ -294,6 +294,9 @@ public class JMessageModule extends ReactContextBaseJavaModule {
 
         WritableMap from = Arguments.createMap();
         from.putString("type", message.getFromType());
+        from.putString("appKey", message.getFromUser().getAppKey());
+        from.putString("isNoDisturb", message.getFromUser().getNoDisturb());
+        from.putString("id", message.getFromUser().getUserName());
         from.putString("name", message.getFromUser().getUserName());
         from.putString("nickname", message.getFromUser().getNickname());
         result.putMap("from", from);
@@ -306,6 +309,8 @@ public class JMessageModule extends ReactContextBaseJavaModule {
                 UserInfo userInfo = (UserInfo)message.getTargetInfo();
                 target.putString("name", userInfo.getUserName());
                 target.putString("id", userInfo.getUserName());
+                target.putString("appKey", userInfo.getAppKey());
+                target.putInt("isNoDisturb", userInfo.getNoDisturb());
                 target.putString("nickname", userInfo.getNickname());
                 break;
             case group:
