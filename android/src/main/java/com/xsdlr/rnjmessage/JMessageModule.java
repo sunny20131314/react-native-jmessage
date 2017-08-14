@@ -295,7 +295,7 @@ public class JMessageModule extends ReactContextBaseJavaModule {
         WritableMap from = Arguments.createMap();
         from.putString("type", message.getFromType());
         from.putString("appKey", message.getFromUser().getAppKey());
-        from.putString("isNoDisturb", message.getFromUser().getNoDisturb());
+        from.putInt("isNoDisturb", message.getFromUser().getNoDisturb());
         from.putString("id", message.getFromUser().getUserName());
         from.putString("name", message.getFromUser().getUserName());
         from.putString("nickname", message.getFromUser().getNickname());
