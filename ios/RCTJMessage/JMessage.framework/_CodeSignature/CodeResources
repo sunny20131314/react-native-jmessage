@@ -112,7 +112,7 @@
 		<data>
 		VdDmHaJA7z/cFNzEzlnTDsZT5PU=
 		</data>
-		<key>jcore-ios-1.1.1.a</key>
+		<key>libjcore-ios.a</key>
 		<data>
 		BY5qMHgWKV7ELnQGRE2+H60hiu4=
 		</data>
@@ -405,7 +405,7 @@
 			txVmylDD8AOoci/OwdavnVtrOQI4yoYJeCiHJEAFjCQ=
 			</data>
 		</dict>
-		<key>jcore-ios-1.1.1.a</key>
+		<key>libjcore-ios.a</key>
 		<dict>
 			<key>hash</key>
 			<data>
