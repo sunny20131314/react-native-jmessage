@@ -32,6 +32,8 @@ import cn.jpush.im.android.api.content.TextContent;
 import cn.jpush.im.android.api.enums.ContentType;
 import cn.jpush.im.android.api.enums.ConversationType;
 import cn.jpush.im.android.api.event.MessageEvent;
+import cn.jpush.im.android.api.event.OfflineMessageEvent;
+import cn.jpush.im.android.api.event.NotificationClickEvent;
 import cn.jpush.im.android.api.model.Conversation;
 import cn.jpush.im.android.api.model.GroupInfo;
 import cn.jpush.im.android.api.model.Message;
@@ -275,6 +277,17 @@ public class JMessageModule extends ReactContextBaseJavaModule {
             promise.reject(e.getCode(), e.getMessage());
         }
     }
+
+     /**
+     * 接收通知栏点击事件
+     * @param event
+     */
+    public void onEvent(NotificationClickEvent event){
+        Message message = event.getMessage();
+        this.getReactApplicationContext().getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
+                        .emit("onNotificationClick", message);
+    }
+
     /**
      * 接收消息事件监听
      * @param event
@@ -283,6 +296,18 @@ public class JMessageModule extends ReactContextBaseJavaModule {
         Message message = event.getMessage();
         this.getReactApplicationContext().getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
                 .emit("onReceiveMessage", transformToWritableMap(message));
+    }
+
+    /**
+     * 接收offline消息事件监听
+     * @param event
+     */
+    public void onEvent(OfflineMessageEvent event) {
+        List<Message> messages = event.getOfflineMessageList();
+        for (Message message: messages) {
+            this.getReactApplicationContext().getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
+                            .emit("onReceiveMessage", transformToWritableMap(message));
+        }
     }
 
     private WritableMap transformToWritableMap(Message message) {
