@@ -1,6 +1,6 @@
 import {
-  NativeModules, 
-  Platform, 
+  NativeModules,
+  Platform,
   NativeEventEmitter,
 } from 'react-native';
 import Base64 from 'base-64';
@@ -17,6 +17,7 @@ export default class JMessage {
   static authKey = Base64.encode(`${JMessage.appKey}:${JMessage.masterSecret}`);
   static events = {
     "onReceiveMessage": "onReceiveMessage",
+    "onNotificationClick": "onNotificationClick",
   };
 
   static addReceiveMessageListener(cb) {
@@ -25,6 +26,15 @@ export default class JMessage {
       supportMessageMediaURL(_message).then((message) => cb(message));
     });
   }
+
+  static addNotificationClickListener(cb) {
+    if (Platform.OS === 'android') {
+      return JMessage.eventEmitter.addListener('onNotificationClick', (message) => {
+        cb(message);
+      });
+    }
+  }
+
   static removeAllListener(eventNames = Object.keys(JMessage.events)) {
     if (Array.isArray(eventNames)) {
       for ( eventName of eventNames) {
