@@ -19,11 +19,6 @@ android {
         targetSdkVersion 23
         versionCode 1
         versionName "1.0"
-        manifestPlaceholders = [
-            JIGUANG_APPKEY: ${JIGUANG_APPKEY},
-            JGUANG_APPCHANNEL: "developer-default",
-            JIGUANG_MASTER_SECRET: ${JIGUANG_MASTER_SECRET}
-        ]
     }
     buildTypes {
         release {
