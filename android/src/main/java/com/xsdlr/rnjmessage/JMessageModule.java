@@ -3,6 +3,7 @@ package com.xsdlr.rnjmessage;
 import android.app.Activity;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
+import android.text.TextUtils;
 import android.graphics.Bitmap;
 import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.Promise;
@@ -29,15 +30,18 @@ import cn.jpush.im.android.api.JMessageClient;
 import cn.jpush.im.android.api.content.ImageContent;
 import cn.jpush.im.android.api.content.MessageContent;
 import cn.jpush.im.android.api.content.TextContent;
+import cn.jpush.im.android.api.content.EventNotificationContent;
 import cn.jpush.im.android.api.enums.ContentType;
 import cn.jpush.im.android.api.enums.ConversationType;
 import cn.jpush.im.android.api.event.MessageEvent;
 import cn.jpush.im.android.api.event.OfflineMessageEvent;
 import cn.jpush.im.android.api.event.NotificationClickEvent;
+import cn.jpush.im.android.api.event.LoginStateChangeEvent;
 import cn.jpush.im.android.api.model.Conversation;
 import cn.jpush.im.android.api.model.GroupInfo;
 import cn.jpush.im.android.api.model.Message;
 import cn.jpush.im.android.api.model.UserInfo;
+import cn.jpush.im.android.api.options.MessageSendingOptions;
 import cn.jpush.im.api.BasicCallback;
 
 /**
@@ -277,15 +281,71 @@ public class JMessageModule extends ReactContextBaseJavaModule {
             promise.reject(e.getCode(), e.getMessage());
         }
     }
+    /**
+    * 进入会话
+    * @param targetId       会话id
+    * @param appKey
+    * @param groupId
+    */
+    @ReactMethod
+    public void enterConversation(String targetId, String appKey, String groupId) {
+        if (null != targetId && !TextUtils.isEmpty(targetId)) {
+            JMessageClient.enterSingleConversation(targetId, appKey);
+        } else {
+            JMessageClient.enterGroupConversation(Long.parseLong(groupId));
+        }
+    }
+
+    /**
+    * 用户登录状态
+    * @param event
+    */
+    public void onEvent(LoginStateChangeEvent event){
+        LoginStateChangeEvent.Reason reason = event.getReason();//获取变更的原因
+        UserInfo myInfo = event.getMyInfo();//获取当前被登出账号的信息
+
+        WritableMap map = Arguments.createMap();
+        map.putString("username", myInfo.getUserName());
+        switch (reason) {
+            case user_password_change:
+                //用户密码在服务器端被修改
+                map.putInt("status", 11);
+                break;
+            case user_logout:
+                //用户换设备登录
+                map.putInt("status", 12);
+                break;
+            case user_deleted:
+                //用户被删除
+                map.putInt("status", 13);
+                break;
+        }
+        this.getReactApplicationContext().getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
+                                    .emit("onLoginStateChange", map);
+    }
 
      /**
      * 接收通知栏点击事件
      * @param event
      */
-    public void onEvent(NotificationClickEvent event){
-        Message message = event.getMessage();
-        this.getReactApplicationContext().getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
-                        .emit("onNotificationClick", message);
+     public void onEvent(NotificationClickEvent notificationClickEvent) {
+        if (null == notificationClickEvent) {
+            return;
+        }
+        Message msg = notificationClickEvent.getMessage();
+        if (msg != null) {
+            String targetId = msg.getTargetID();
+            String appKey = msg.getFromAppKey();
+            ConversationType type = msg.getTargetType();
+            Conversation conv;
+            //TODO convert event to JS side
+            WritableMap map = Arguments.createMap();
+            map.putString("targetId",targetId);
+            map.putString("appKey", appKey);
+            map.putString("conversationType", type.toString());
+            this.getReactApplicationContext().getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
+                            .emit("onNotificationClick", map);
+        }
     }
 
     /**
@@ -329,6 +389,7 @@ public class JMessageModule extends ReactContextBaseJavaModule {
         WritableMap target = Arguments.createMap();
         target.putInt("type", messagePropsToInt(message.getTargetType()));
         target.putString("typeDesc", messagePropsToString(message.getTargetType()));
+
         switch (message.getTargetType()) {
             case single:
                 UserInfo userInfo = (UserInfo)message.getTargetInfo();
@@ -353,7 +414,23 @@ public class JMessageModule extends ReactContextBaseJavaModule {
         result.putDouble("timestamp", message.getCreateTime());
         result.putInt("contentType", messagePropsToInt(message.getContentType()));
         result.putString("contentTypeDesc", messagePropsToString(message.getContentType()));
-        result.putString("content", message.getContent().toJson());
+
+        EventNotificationContent eventNotificationContent = (EventNotificationContent)message.getContent();
+        switch (message.getContentType()){
+            case text:
+                //处理文字消息
+                result.putString("content", message.getContent().toJson());
+                break;
+            case custom:
+                //处理自定义消息
+                result.putString("content", message.getContent().toJson());
+                break;
+            case eventNotification:
+                //处理事件提醒消息
+                result.putString("content", eventNotificationContent.getEventText());
+                break;
+        }
+
         return result;
     }
 
@@ -573,7 +650,25 @@ public class JMessageModule extends ReactContextBaseJavaModule {
                 }
             }
         });
-        JMessageClient.sendMessage(message);
+        MessageSendingOptions options = new MessageSendingOptions();
+        if(data.getString("not_at")!=null){
+            options.setNotificationAtPrefix(data.getString("not_at"));
+        }
+        if(data.getString("not_text")!=null){
+            options.setNotificationText(data.getString("not_text"));
+        }
+        if(data.getString("not_title")!=null){
+            options.setNotificationTitle(data.getString("not_title"));
+        }
+        if(data.getString("not_at")==null && data.getString("not_text")==null && data.getString("not_title")==null){
+            options = null;
+        }
+        if(options == null){
+            JMessageClient.sendMessage(message);
+        }else{
+            JMessageClient.sendMessage(message,options);
+        }
+
     }
 
     private Conversation getConversation(String cid) throws JMessageException {

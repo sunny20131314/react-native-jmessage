@@ -18,9 +18,17 @@ export default class JMessage {
   static events = {
     "onReceiveMessage": "onReceiveMessage",
     "onNotificationClick": "onNotificationClick",
+    "onLoginStateChange": "onLoginStateChange",
   };
 
   static addReceiveMessageListener(cb) {
+    return JMessage.eventEmitter.addListener('onReceiveMessage', (message) => {
+      const _message = formatMessage(message);
+      supportMessageMediaURL(_message).then((message) => cb(message));
+    });
+  }
+
+  static addLoginStateListener(cb) {
     return JMessage.eventEmitter.addListener('onReceiveMessage', (message) => {
       const _message = formatMessage(message);
       supportMessageMediaURL(_message).then((message) => cb(message));
