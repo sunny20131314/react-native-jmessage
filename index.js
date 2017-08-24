@@ -29,18 +29,15 @@ export default class JMessage {
   }
 
   static addLoginStateListener(cb) {
-    return JMessage.eventEmitter.addListener('onReceiveMessage', (message) => {
-      const _message = formatMessage(message);
-      supportMessageMediaURL(_message).then((message) => cb(message));
+    return JMessage.eventEmitter.addListener('onLoginStateChange', (info) => {
+      cb(info);
     });
   }
 
   static addNotificationClickListener(cb) {
-    if (Platform.OS === 'android') {
-      return JMessage.eventEmitter.addListener('onNotificationClick', (message) => {
-        cb(message);
-      });
-    }
+    return JMessage.eventEmitter.addListener('onNotificationClick', (message) => {
+      cb(message);
+    });
   }
 
   static removeAllListener(eventNames = Object.keys(JMessage.events)) {
