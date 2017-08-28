@@ -302,10 +302,10 @@ public class JMessageModule extends ReactContextBaseJavaModule {
     */
     public void onEvent(LoginStateChangeEvent event){
         LoginStateChangeEvent.Reason reason = event.getReason();//获取变更的原因
-        UserInfo myInfo = event.getMyInfo();//获取当前被登出账号的信息
-
         WritableMap map = Arguments.createMap();
-        map.putString("username", myInfo.getUserName());
+        //UserInfo myInfo = event.getMyInfo();//获取当前被登出账号的信息
+        //map.putString("username", myInfo.getUserName());
+
         switch (reason) {
             case user_password_change:
                 //用户密码在服务器端被修改
@@ -320,29 +320,43 @@ public class JMessageModule extends ReactContextBaseJavaModule {
                 map.putInt("status", 13);
                 break;
         }
+
         this.getReactApplicationContext().getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
-                                    .emit("onLoginStateChange", map);
+                                                                    .emit("onLoginStateChange", map);
     }
 
      /**
      * 接收通知栏点击事件
      * @param event
      */
-     public void onEvent(NotificationClickEvent notificationClickEvent) {
+    public void onEvent(NotificationClickEvent notificationClickEvent){
         if (null == notificationClickEvent) {
             return;
         }
         Message msg = notificationClickEvent.getMessage();
         if (msg != null) {
-            String targetId = msg.getTargetID();
-            String appKey = msg.getFromAppKey();
-            ConversationType type = msg.getTargetType();
-            Conversation conv;
-            //TODO convert event to JS side
             WritableMap map = Arguments.createMap();
-            map.putString("targetId",targetId);
-            map.putString("appKey", appKey);
-            map.putString("conversationType", type.toString());
+            switch (msg.getTargetType()) {
+                case single:
+                    UserInfo userInfo = (UserInfo)msg.getTargetInfo();
+                    map.putInt("type", 1);
+                    map.putString("id", userInfo.getUserName());
+                    map.putString("title", userInfo.getNickname());
+                    map.putString("appKey", userInfo.getAppKey());
+                    map.putInt("isNoDisturb", userInfo.getNoDisturb());
+                    break;
+                case group:
+                    GroupInfo groupInfo = (GroupInfo)msg.getTargetInfo();
+                    map.putInt("type", 2);
+                    map.putDouble("id", groupInfo.getGroupID());
+                    map.putString("title", groupInfo.getGroupName());
+                    map.putInt("isNoDisturb", groupInfo.getNoDisturb());
+                    map.putString("owner", groupInfo.getGroupOwner());
+                    break;
+                default:
+                    break;
+            }
+
             this.getReactApplicationContext().getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
                             .emit("onNotificationClick", map);
         }
@@ -374,6 +388,22 @@ public class JMessageModule extends ReactContextBaseJavaModule {
         WritableMap result = Arguments.createMap();
         if (message == null) return result;
 
+        switch (message.getContentType()){
+            case text:
+                //处理文字消息
+                result.putString("content", message.getContent().toJson());
+                break;
+            case custom:
+                //处理自定义消息
+                result.putString("content", message.getContent().toJson());
+                break;
+            case eventNotification:
+                return result; // todo: 直接屏蔽掉事件提示, 因为ios没有具体事件...
+                //EventNotificationContent eventNotificationContent = (EventNotificationContent)message.getContent();
+                //处理事件提醒消息
+                //result.putString("content", eventNotificationContent.getEventText());
+                //break;
+        }
         result.putString("msgId", Utils.defaultValue(message.getId(), "").toString());
         result.putString("serverMessageId", Utils.defaultValue(message.getServerMessageId(), "").toString());
 
@@ -389,7 +419,6 @@ public class JMessageModule extends ReactContextBaseJavaModule {
         WritableMap target = Arguments.createMap();
         target.putInt("type", messagePropsToInt(message.getTargetType()));
         target.putString("typeDesc", messagePropsToString(message.getTargetType()));
-
         switch (message.getTargetType()) {
             case single:
                 UserInfo userInfo = (UserInfo)message.getTargetInfo();
@@ -414,22 +443,6 @@ public class JMessageModule extends ReactContextBaseJavaModule {
         result.putDouble("timestamp", message.getCreateTime());
         result.putInt("contentType", messagePropsToInt(message.getContentType()));
         result.putString("contentTypeDesc", messagePropsToString(message.getContentType()));
-
-        EventNotificationContent eventNotificationContent = (EventNotificationContent)message.getContent();
-        switch (message.getContentType()){
-            case text:
-                //处理文字消息
-                result.putString("content", message.getContent().toJson());
-                break;
-            case custom:
-                //处理自定义消息
-                result.putString("content", message.getContent().toJson());
-                break;
-            case eventNotification:
-                //处理事件提醒消息
-                result.putString("content", eventNotificationContent.getEventText());
-                break;
-        }
 
         return result;
     }
@@ -610,7 +623,8 @@ public class JMessageModule extends ReactContextBaseJavaModule {
     }
 
     private void sendMessage(Conversation conversation,
-                             String contentType, ReadableMap data,
+                             String contentType,
+                             ReadableMap data,
                              final Promise promise) {
         String type = contentType.toLowerCase();
         MessageContent content;
@@ -651,24 +665,35 @@ public class JMessageModule extends ReactContextBaseJavaModule {
             }
         });
         MessageSendingOptions options = new MessageSendingOptions();
-        if(data.getString("not_at")!=null){
+
+        if(data.getString("not_at") != null){
             options.setNotificationAtPrefix(data.getString("not_at"));
         }
-        if(data.getString("not_text")!=null){
+        if(data.getString("not_text") != null){
             options.setNotificationText(data.getString("not_text"));
         }
-        if(data.getString("not_title")!=null){
+        if(data.getString("not_title") != null){
             options.setNotificationTitle(data.getString("not_title"));
         }
-        if(data.getString("not_at")==null && data.getString("not_text")==null && data.getString("not_title")==null){
+        if(data.getString("not_at") == null && data.getString("not_text") == null && data.getString("not_title") == null){
             options = null;
         }
         if(options == null){
             JMessageClient.sendMessage(message);
         }else{
-            JMessageClient.sendMessage(message,options);
+            JMessageClient.sendMessage(message, options);
         }
 
+        /*
+        todo 设置无效...
+        options.setNotificationAtPrefix("setNotificationAtPrefix");
+        options.setNotificationText("Text~~~");
+        options.setNotificationTitle("Title~~~");
+        options.setRetainOffline(true);
+        options.setShowNotification(true);
+
+        JMessageClient.sendMessage(message, options);
+        */
     }
 
     private Conversation getConversation(String cid) throws JMessageException {

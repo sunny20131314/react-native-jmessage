@@ -35,7 +35,8 @@ RCT_EXPORT_MODULE()
 - (NSArray<NSString *> *)supportedEvents {
     return @[
              @"onReceiveMessage",
-             @"onReceiveMessageDownloadFailed"
+             @"onReceiveMessageDownloadFailed",
+             @"onLoginStateChange"
              ];
 }
 
@@ -77,9 +78,10 @@ RCT_EXPORT_MODULE()
 
 - (void)onReceiveNotificationEvent:(JMSGNotificationEvent *)event {
     switch (event.eventType) {
-        case kJMSGEventNotificationNoDisturbChange:
-            NSLog(@"Current user info change Event ");
-            break;
+        // todo 不存在这个类
+        //case kJMSGEventNotificationNoDisturbChange:
+        //    NSLog(@"Current user info change Event ");
+        //    break;
         case kJMSGEventNotificationReceiveFriendInvitation:
             NSLog(@"Receive Friend Invitation Event ");
             break;
@@ -96,6 +98,10 @@ RCT_EXPORT_MODULE()
             NSLog(@"Receive Server Friend Update Event ");
             break;
         case kJMSGEventNotificationLoginKicked:
+            // todo 返回的数据类型 用户被登出
+            [self sendEventWithName:@"onLoginStateChange"
+                                       body:@{@"status": @"12"}
+                                       ];
             NSLog(@"Login Kicked Event ");
             break;
         case kJMSGEventNotificationServerAlterPassword:
@@ -124,7 +130,7 @@ RCT_EXPORT_MODULE()
 //MARK: 公开方法
 /**
  MARK: 是否已经登陆
- 
+
  */
 RCT_EXPORT_METHOD(isLoggedIn
                   :(RCTPromiseResolveBlock)resolve
@@ -151,7 +157,7 @@ RCT_EXPORT_METHOD(login:(NSString *)username
 }
 /**
  MARK: 注销
- 
+
  */
 RCT_EXPORT_METHOD(logout
                   :(RCTPromiseResolveBlock)resolve
@@ -166,7 +172,7 @@ RCT_EXPORT_METHOD(logout
 }
 /**
  MARK: 获得个人用户信息
- 
+
 */
 RCT_EXPORT_METHOD(myInfo
                   :(RCTPromiseResolveBlock)resolve
@@ -198,7 +204,7 @@ RCT_EXPORT_METHOD(myInfo
  @param username 用户名
  @param type     类型(目前只支持text,image)
  @param data     数据
- 
+
  * data范例：
  * text为{text: ''}
  * image为{image: ''}
@@ -218,6 +224,7 @@ RCT_EXPORT_METHOD(sendSingleMessage
         reject([@(error.code) stringValue], error.localizedDescription, error);
         return;
     }
+
     [self sendMessageWithUserNameOrGID:appkey
                                   name:username
                               isSingle:YES
@@ -229,11 +236,11 @@ RCT_EXPORT_METHOD(sendSingleMessage
 }
 /**
  MARK: 发送群聊消息
- 
+
  @param groupId  群id
  @param type     类型(目前只支持text,image)
  @param data     数据
- 
+
  * data范例：
  * text为{text: ''}
  * image为{image: ''}
@@ -252,6 +259,7 @@ RCT_EXPORT_METHOD(sendGroupMessage
         reject([@(error.code) stringValue], error.localizedDescription, error);
         return;
     }
+
     [self sendMessageWithUserNameOrGID:nil
                                   name:groupId
                               isSingle:NO
@@ -263,11 +271,11 @@ RCT_EXPORT_METHOD(sendGroupMessage
 }
 /**
  MARK: 根据会话id发送消息
- 
+
  @param cid      会话id
  @param type     类型(目前只支持text,image)
  @param data     数据
- 
+
  * data范例：
  * text为{text: ''}
  * image为{image: ''}
@@ -324,7 +332,7 @@ RCT_EXPORT_METHOD(sendMessageByCID
 }
 /**
  MARK: 全部会话列表
- 
+
  */
 RCT_EXPORT_METHOD(allConversations
                   :(RCTPromiseResolveBlock)resolve
@@ -401,11 +409,11 @@ RCT_EXPORT_METHOD(allConversations
 }
 /**
  MARK: 历史聊天消息
- 
+
  @param cid      会话id
  @param offset   偏移量
  @param limit    数量
- 
+
  * 参数举例：
  *
  * - offset = nil, limit = nil，表示获取全部。相当于 allMessages。
@@ -470,7 +478,7 @@ RCT_EXPORT_METHOD(clearUnreadCount
 }
 /**
  MARK: 移除会话记录
- 
+
  @param cid 会话id
  */
 RCT_EXPORT_METHOD(removeConversation
@@ -564,6 +572,9 @@ RCT_EXPORT_METHOD(removeConversation
 }
 
 - (NSDictionary *)toDictoryWithMessage:(JMSGMessage *)message {
+    if ( message.contentType == 5 ) {
+       return @"";
+    }
     return @{@"msgId": message.msgId,
              @"serverMessageId": OPTION_NULL(message.serverMessageId),
              @"from": @{@"type": OPTION_NULL(message.fromType),
@@ -628,8 +639,17 @@ RCT_EXPORT_METHOD(removeConversation
                               timeout:(NSTimeInterval)timeout
                               resolve:(RCTPromiseResolveBlock)resolve
                                reject:(RCTPromiseRejectBlock)reject {
+    NSString *alert = [data valueForKey:@"not_text"];
+    NSString *title = [data valueForKey:@"not_title"];
+
+    NSString *optionalContent = @"";
+    // todo test
+    // JMSGCustomNotification *customNotification = [[JMSGCustomNotification alloc] alert: alert];
+    // JMSGOptionalContent *optionalContent = [[JMSGCustomNotification alloc] customNotification: customNotification];
+
     if ([type caseInsensitiveCompare:@"Text"] == NSOrderedSame) {
         NSString *text = [data valueForKey:@"text"];
+
         if (!text) {
             NSError *error = [[NSError alloc] initWithDomain:@""
                                                         code:kJMSGRNErrorParamMessageNil
@@ -645,8 +665,10 @@ RCT_EXPORT_METHOD(removeConversation
             if (!error) {
                 JMSGConversation *conversation = resultObject;
                 JMSGMessage *message = [conversation createMessageWithContent:[[JMSGTextContent alloc] initWithText:text]];
+
                 [self nativeSendMessageWithConversation:conversation
                                                 message:message
+                                        optionalContent:optionalContent
                                                 timeout:timeout
                                                 resolve:resolve
                                                  reject:reject];
@@ -676,6 +698,7 @@ RCT_EXPORT_METHOD(removeConversation
                     JMSGMessage *message = resultObject;
                     [self nativeSendMessageWithConversation:conversation
                                                     message:message
+                                            optionalContent:optionalContent
                                                     timeout:timeout
                                                     resolve:resolve
                                                      reject:reject];
@@ -726,12 +749,17 @@ RCT_EXPORT_METHOD(removeConversation
  */
 - (void) nativeSendMessageWithConversation:(JMSGConversation*)conversation
                                    message:(JMSGMessage*)message
+                          // optionalContent:(JMSGOptionalContent *)optionalContent
+                           optionalContent:(NSString *)optionalContent
                                    timeout:(NSTimeInterval)timeout
-                              resolve:(RCTPromiseResolveBlock)resolve
-                               reject:(RCTPromiseRejectBlock)reject {
+                                   resolve:(RCTPromiseResolveBlock)resolve
+                                    reject:(RCTPromiseRejectBlock)reject {
     NSString *msgId = message.msgId;
     [_sendMessageIdDic setValue:resolve forKey:msgId];
-    [conversation sendMessage:message];
+    [conversation sendMessage:message
+            //  optionalContent:optionalContent
+    ];
+
     if (timeout <= 0) return;
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, timeout * NSEC_PER_SEC), dispatch_get_main_queue(), ^(void){
         if ([_sendMessageIdDic valueForKey:msgId]) {
@@ -757,14 +785,14 @@ RCT_EXPORT_METHOD(removeConversation
                                                 code:kJMSGErrorRNParamConversationInvalid
                                             userInfo:@{NSLocalizedDescriptionKey: @"会话无效"
                                                        }];
-    
+
     NSData *data = [[NSData alloc] initWithBase64EncodedString:cid options:NSDataBase64DecodingIgnoreUnknownCharacters];
     NSDictionary* dataDic = [NSJSONSerialization JSONObjectWithData:data options:NSJSONReadingAllowFragments error:nil];
-    
+
     NSString *appkey = [dataDic valueForKey:@"appkey"];
     NSNumber *type = [dataDic valueForKey:@"type"];
     NSString *nameOrGID = [dataDic valueForKey:@"id"];
-    
+
     if (!nameOrGID) {
         handler(nil, conversationInvalidError);
         return;

@@ -23,6 +23,10 @@ export default class JMessage {
 
   static addReceiveMessageListener(cb) {
     return JMessage.eventEmitter.addListener('onReceiveMessage', (message) => {
+      if ( !message ) {
+        cb('');
+        return;
+      }
       const _message = formatMessage(message);
       supportMessageMediaURL(_message).then((message) => cb(message));
     });
@@ -35,9 +39,11 @@ export default class JMessage {
   }
 
   static addNotificationClickListener(cb) {
-    return JMessage.eventEmitter.addListener('onNotificationClick', (message) => {
-      cb(message);
-    });
+    if (Platform.OS === 'android') {
+      return JMessage.eventEmitter.addListener('onNotificationClick', (message) => {
+        cb(message);
+      });
+    }
   }
 
   static removeAllListener(eventNames = Object.keys(JMessage.events)) {
