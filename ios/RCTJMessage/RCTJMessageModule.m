@@ -664,7 +664,12 @@ RCT_EXPORT_METHOD(removeConversation
                        completionHandler:^(id resultObject, NSError *error) {
             if (!error) {
                 JMSGConversation *conversation = resultObject;
-                JMSGMessage *message = [conversation createMessageWithContent:[[JMSGTextContent alloc] initWithText:text]];
+
+                JMSGTextContent *textContent = [[JMSGTextContent alloc] initWithText:text];
+                [textContent addStringExtra:@"name" forKey:@"userName"];
+                [textContent addStringExtra:@"appkey" forKey:@"appkey"];
+                [textContent addStringExtra:@"isSingle" forKey:@"isSingle"];
+                JMSGMessage *message = [conversation createMessageWithContent:textContent];
 
                 [self nativeSendMessageWithConversation:conversation
                                                 message:message
