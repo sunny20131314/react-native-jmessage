@@ -9,6 +9,7 @@
 #import "RCTJMessageModule.h"
 #import <JMessage/JMSGTextContent.h>
 #import <JMessage/JMSGImageContent.h>
+#import <JMessage/JMSGOptionalContent.h>
 
 @interface RCTJMessageModule () {
 @private
@@ -639,13 +640,14 @@ RCT_EXPORT_METHOD(removeConversation
                               timeout:(NSTimeInterval)timeout
                               resolve:(RCTPromiseResolveBlock)resolve
                                reject:(RCTPromiseRejectBlock)reject {
-    NSString *alert = [data valueForKey:@"not_text"];
-    NSString *title = [data valueForKey:@"not_title"];
 
     NSString *optionalContent = @"";
     // todo test
-    // JMSGCustomNotification *customNotification = [[JMSGCustomNotification alloc] alert: alert];
-    // JMSGOptionalContent *optionalContent = [[JMSGCustomNotification alloc] customNotification: customNotification];
+    //JMSGCustomNotification *customNotification = [[JMSGCustomNotification alloc] init];
+    //customNotification.alert = [data valueForKey:@"not_text"];
+    //customNotification.enabled = true;
+    //JMSGOptionalContent *optionalContent = [[JMSGOptionalContent alloc] init];
+    //optionalContent.customNotification = customNotification;
 
     if ([type caseInsensitiveCompare:@"Text"] == NSOrderedSame) {
         NSString *text = [data valueForKey:@"text"];
@@ -666,9 +668,18 @@ RCT_EXPORT_METHOD(removeConversation
                 JMSGConversation *conversation = resultObject;
 
                 JMSGTextContent *textContent = [[JMSGTextContent alloc] initWithText:text];
-                [textContent addStringExtra:@"name" forKey:@"userName"];
-                [textContent addStringExtra:@"appkey" forKey:@"appkey"];
-                [textContent addStringExtra:@"isSingle" forKey:@"isSingle"];
+                // todo
+                NSString *single = @"2";
+                if ( isSingle == YES ) {
+                    single = @"1";
+                    NSString *id = [data valueForKey:@"id"];
+                    [textContent addStringExtra:id forKey:@"id"];
+                }
+                else {
+                    [textContent addStringExtra:name forKey:@"id"];
+                }
+                [textContent addStringExtra:appkey forKey:@"appkey"];
+                [textContent addStringExtra:single forKey:@"type"];
                 JMSGMessage *message = [conversation createMessageWithContent:textContent];
 
                 [self nativeSendMessageWithConversation:conversation
@@ -754,7 +765,7 @@ RCT_EXPORT_METHOD(removeConversation
  */
 - (void) nativeSendMessageWithConversation:(JMSGConversation*)conversation
                                    message:(JMSGMessage*)message
-                          // optionalContent:(JMSGOptionalContent *)optionalContent
+                           //optionalContent:(JMSGOptionalContent *)optionalContent
                            optionalContent:(NSString *)optionalContent
                                    timeout:(NSTimeInterval)timeout
                                    resolve:(RCTPromiseResolveBlock)resolve
@@ -762,7 +773,7 @@ RCT_EXPORT_METHOD(removeConversation
     NSString *msgId = message.msgId;
     [_sendMessageIdDic setValue:resolve forKey:msgId];
     [conversation sendMessage:message
-            //  optionalContent:optionalContent
+              //optionalContent:optionalContent
     ];
 
     if (timeout <= 0) return;
