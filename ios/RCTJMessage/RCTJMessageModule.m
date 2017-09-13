@@ -641,13 +641,22 @@ RCT_EXPORT_METHOD(removeConversation
                               resolve:(RCTPromiseResolveBlock)resolve
                                reject:(RCTPromiseRejectBlock)reject {
 
-    NSString *optionalContent = @"";
-    // todo test
-    //JMSGCustomNotification *customNotification = [[JMSGCustomNotification alloc] init];
-    //customNotification.alert = [data valueForKey:@"not_text"];
-    //customNotification.enabled = true;
-    //JMSGOptionalContent *optionalContent = [[JMSGOptionalContent alloc] init];
-    //optionalContent.customNotification = customNotification;
+    NSString *not_text = [data valueForKey:@"not_text"];
+    JMSGCustomNotification *customNotification = [[JMSGCustomNotification alloc] init];
+    JMSGOptionalContent *optionalContent = [[JMSGOptionalContent alloc] init];
+
+    // 无数据时不可用
+    if (not_text) {
+        customNotification.enabled = true;
+        customNotification.alert = not_text;
+        customNotification.title = [data valueForKey:@"not_title"];
+    }
+    else {
+        customNotification.enabled = false;
+    }
+    optionalContent.customNotification = customNotification;
+    optionalContent.noSaveOffline = NO;
+    optionalContent.noSaveNotification = NO;
 
     if ([type caseInsensitiveCompare:@"Text"] == NSOrderedSame) {
         NSString *text = [data valueForKey:@"text"];
@@ -765,15 +774,14 @@ RCT_EXPORT_METHOD(removeConversation
  */
 - (void) nativeSendMessageWithConversation:(JMSGConversation*)conversation
                                    message:(JMSGMessage*)message
-                           //optionalContent:(JMSGOptionalContent *)optionalContent
-                           optionalContent:(NSString *)optionalContent
+                           optionalContent:(JMSGOptionalContent *)optionalContent
                                    timeout:(NSTimeInterval)timeout
                                    resolve:(RCTPromiseResolveBlock)resolve
                                     reject:(RCTPromiseRejectBlock)reject {
     NSString *msgId = message.msgId;
     [_sendMessageIdDic setValue:resolve forKey:msgId];
     [conversation sendMessage:message
-              //optionalContent:optionalContent
+              optionalContent:optionalContent
     ];
 
     if (timeout <= 0) return;
