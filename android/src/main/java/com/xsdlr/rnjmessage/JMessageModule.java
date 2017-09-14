@@ -167,7 +167,7 @@ public class JMessageModule extends ReactContextBaseJavaModule {
         Conversation conversation = Utils.isEmpty(appkey)
                 ? Conversation.createSingleConversation(username)
                 : Conversation.createSingleConversation(username, appkey);
-        sendMessage(conversation, type, data, "1", username, appkey, promise);
+        sendMessage(conversation, type, data, "1", data.getString("id"), appkey, promise);
     }
     /**
      * 发送群聊消息

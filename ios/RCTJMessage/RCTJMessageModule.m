@@ -681,8 +681,12 @@ RCT_EXPORT_METHOD(removeConversation
                 NSString *single = @"2";
                 if ( isSingle == YES ) {
                     single = @"1";
+                    NSString *id = [data valueForKey:@"id"];
+                    [textContent addStringExtra:id forKey:@"id"];
                 }
-                [textContent addStringExtra:name forKey:@"id"];
+                else {
+                    [textContent addStringExtra:name forKey:@"id"];
+                }
                 [textContent addStringExtra:appkey forKey:@"appkey"];
                 [textContent addStringExtra:single forKey:@"type"];
                 JMSGMessage *message = [conversation createMessageWithContent:textContent];
