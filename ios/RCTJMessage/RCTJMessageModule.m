@@ -124,10 +124,20 @@ RCT_EXPORT_MODULE()
     }
 }
 
+// 离线
+- (void)onSyncOfflineMessageConversation:(JMSGConversation *)conversation offlineMessages:(NSArray JMSG_GENERIC ( __kindof JMSGMessage *) *)offlineMessages
+{
+    for (int i = 0; i < offlineMessages.count; i++) {
+        [self sendEventWithName:@"onReceiveMessage"
+                                   body:[self toDictoryWithMessage:offlineMessages[i] ]];
+    }
+}
+
 - (void)onReceiveMessageDownloadFailed:(JMSGMessage *)message {
     [self sendEventWithName:@"onReceiveMessageDownloadFailed"
                        body: [self toDictoryWithMessage:message]];
 }
+
 //MARK: 公开方法
 /**
  MARK: 是否已经登陆

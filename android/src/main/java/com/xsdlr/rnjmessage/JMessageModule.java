@@ -382,6 +382,15 @@ public class JMessageModule extends ReactContextBaseJavaModule {
             this.getReactApplicationContext().getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
                             .emit("onReceiveMessage", transformToWritableMap(message));
         }
+
+        // todo 批量返回
+        //Message[] msgArry = new Message[messages.length];
+        //for (int i=0;i<messages.length;i++) {
+        //    msgArry[i] = messages[i];
+        //}
+
+        //this.getReactApplicationContext().getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
+        //                            .emit("onReceiveMessage", msgArry);
     }
 
     private WritableMap transformToWritableMap(Message message) {
