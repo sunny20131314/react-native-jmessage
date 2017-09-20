@@ -51,6 +51,7 @@ RCT_EXPORT_MODULE()
                     channel:appChannel
            apsForProduction:isProduction
                    category:category];
+    [JMSGUser logout:^(id resultObject, NSError *error) {}];
 }
 
 - (void)startObserving {
