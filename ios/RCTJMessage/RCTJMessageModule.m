@@ -690,10 +690,11 @@ RCT_EXPORT_METHOD(removeConversation
                 JMSGTextContent *textContent = [[JMSGTextContent alloc] initWithText:text];
                 // todo
                 NSString *single = @"2";
+                NSString *sendId = [data valueForKey:@"sendId"];
+                [textContent addStringExtra:sendId forKey:@"sendId"];
                 if ( isSingle == YES ) {
                     single = @"1";
-                    NSString *id = [data valueForKey:@"id"];
-                    [textContent addStringExtra:id forKey:@"id"];
+                    [textContent addStringExtra:sendId forKey:@"id"];
                 }
                 else {
                     [textContent addStringExtra:name forKey:@"id"];

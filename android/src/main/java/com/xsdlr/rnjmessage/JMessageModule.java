@@ -167,7 +167,7 @@ public class JMessageModule extends ReactContextBaseJavaModule {
         Conversation conversation = Utils.isEmpty(appkey)
                 ? Conversation.createSingleConversation(username)
                 : Conversation.createSingleConversation(username, appkey);
-        sendMessage(conversation, type, data, "1", data.getString("id"), appkey, promise);
+        sendMessage(conversation, type, data, "1", data.getString("sendId"), appkey, data.getString("sendId"), promise);
     }
     /**
      * 发送群聊消息
@@ -187,7 +187,7 @@ public class JMessageModule extends ReactContextBaseJavaModule {
             return;
         }
         Conversation conversation = Conversation.createGroupConversation(gid);
-        sendMessage(conversation, type, data, "2", groupId, null, promise);
+        sendMessage(conversation, type, data, "2", groupId, null, data.getString("sendId"), promise);
     }
     /**
      * 根据会话发送消息
@@ -200,7 +200,7 @@ public class JMessageModule extends ReactContextBaseJavaModule {
     public void sendMessageByCID(String cid, String type, ReadableMap data, final Promise promise) {
         try {
             Conversation conversation = getConversation(cid);
-            sendMessage(conversation, type, data, "3", null, null, promise);
+            sendMessage(conversation, type, data, "3", null, null, null, promise);
         } catch (JMessageException e) {
             promise.reject(e.getCode(), e.getMessage());
         }
@@ -637,6 +637,7 @@ public class JMessageModule extends ReactContextBaseJavaModule {
                              String isSingle,
                              String id,
                              String appKey,
+                             String sendId,
                              final Promise promise
                              ) {
         String type = contentType.toLowerCase();
@@ -670,6 +671,7 @@ public class JMessageModule extends ReactContextBaseJavaModule {
         content.setStringExtra("id", id);
         content.setStringExtra("appkey", appKey);
         content.setStringExtra("type", isSingle);
+        content.setStringExtra("sendId", sendId);
         final Message message = conversation.createSendMessage(content);
         message.setOnSendCompleteCallback(new BasicCallback() {
             @Override
