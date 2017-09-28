@@ -50,7 +50,9 @@ RCT_EXPORT_MODULE()
                      appKey:appKey
                     channel:appChannel
            apsForProduction:isProduction
-                   category:category];
+                   category:category
+             //messageRoaming:false
+                   ];
     [JMSGUser logout:^(id resultObject, NSError *error) {}];
 }
 
@@ -694,11 +696,8 @@ RCT_EXPORT_METHOD(removeConversation
                 [textContent addStringExtra:sendId forKey:@"sendId"];
                 if ( isSingle == YES ) {
                     single = @"1";
-                    [textContent addStringExtra:sendId forKey:@"id"];
                 }
-                else {
-                    [textContent addStringExtra:name forKey:@"id"];
-                }
+                [textContent addStringExtra:name forKey:@"id"];
                 [textContent addStringExtra:appkey forKey:@"appkey"];
                 [textContent addStringExtra:single forKey:@"type"];
                 JMSGMessage *message = [conversation createMessageWithContent:textContent];
