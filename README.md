@@ -11,9 +11,11 @@
 
 ## 构建
 本模块使用官方jmessage版本如下：
+- [x] iOS SDK 3.2.1 build 139
+- [x] Android SDK 2.2.0
 
-- [x] iOS SDK 3.0.1 build 139
-- [x] Android SDK 2.0.0
+## 在原工程上的修改（由于自己的工程使用到了jpush-react-native）：
+1、引用的jcore包为jcore-react-native工程，而在自己的工程中，需要在setting.gradle中设置jcore路径，删除build.gradle 中的compile project(':jpush-react-native')
 
 ## 功能
 - [x] 发送消息(文本、图片)
