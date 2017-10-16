@@ -1,6 +1,7 @@
 package com.xsdlr.rnjmessage;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.text.TextUtils;
@@ -357,8 +358,20 @@ public class JMessageModule extends ReactContextBaseJavaModule {
                     break;
             }
 
-            this.getReactApplicationContext().getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
-                            .emit("onNotificationClick", map);
+            // todo add 点击im 消息进入应用
+            try {
+                ReactApplicationContext mContext = getReactApplicationContext();
+                Intent launchIntent = mContext.getApplicationContext().getPackageManager()
+                        .getLaunchIntentForPackage(mContext.getPackageName());
+                launchIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_SINGLE_TOP
+                        | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                mContext.startActivity(launchIntent);
+                this.getReactApplicationContext().getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
+                                            .emit("onNotificationClick", map);
+
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
     }
 
