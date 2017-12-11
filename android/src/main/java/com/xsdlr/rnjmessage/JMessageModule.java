@@ -714,6 +714,7 @@ public class JMessageModule extends ReactContextBaseJavaModule {
             JMessageClient.sendMessage(message);
         }else{
             options.setRetainOffline(true);
+            options.setShowNotification(true);
             options.setCustomNotificationEnabled(true);
             JMessageClient.sendMessage(message, options);
         }
