@@ -74,7 +74,7 @@ public class JMessageModule extends ReactContextBaseJavaModule {
      */
     @ReactMethod
     public void setupJMessage() {
-        JMessageClient.init(this.getReactApplicationContext());
+        JMessageClient.init(this.getReactApplicationContext(), false);  // JMessageClient.init(Context context, boolean msgRoaming) 应用程序上下文对象 boolean msgRoaming 是否启用消息漫游，true - 启用，false - 关闭
         JMessageClient.registerEventReceiver(this);
         JCoreInterface.setDebugMode(JMessageModule.isDebug);
     }

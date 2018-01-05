@@ -51,7 +51,7 @@ RCT_EXPORT_MODULE()
                     channel:appChannel
            apsForProduction:isProduction
                    category:category
-             //messageRoaming:false
+             messageRoaming:false
                    ];
     [JMSGUser logout:^(id resultObject, NSError *error) {}];
 }
