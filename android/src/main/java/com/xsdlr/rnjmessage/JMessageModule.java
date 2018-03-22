@@ -681,10 +681,12 @@ public class JMessageModule extends ReactContextBaseJavaModule {
                 return;
         }
 
-        content.setStringExtra("id", id);
-        content.setStringExtra("appkey", appKey);
+        content.setStringExtra("receiveId", id);
+        content.setStringExtra("sendAppkey", appKey);
         content.setStringExtra("type", isSingle);
         content.setStringExtra("sendId", sendId);
+        content.setStringExtra("receiveAppKey", data.getString("receiveAppKey"));
+
         final Message message = conversation.createSendMessage(content);
         message.setOnSendCompleteCallback(new BasicCallback() {
             @Override

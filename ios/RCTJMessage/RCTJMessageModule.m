@@ -693,12 +693,14 @@ RCT_EXPORT_METHOD(removeConversation
                 // todo
                 NSString *single = @"2";
                 NSString *sendId = [data valueForKey:@"sendId"];
+                NSString *receiveAppKey = [data valueForKey:@"receiveAppKey"];
                 [textContent addStringExtra:sendId forKey:@"sendId"];
+                [textContent addStringExtra:appkey forKey:@"sendAppkey"];
+                [textContent addStringExtra:receiveAppKey forKey:@"receiveAppKey"];
+                [textContent addStringExtra:name forKey:@"receiveId"];
                 if ( isSingle == YES ) {
                     single = @"1";
                 }
-                [textContent addStringExtra:name forKey:@"id"];
-                [textContent addStringExtra:appkey forKey:@"appkey"];
                 [textContent addStringExtra:single forKey:@"type"];
                 JMSGMessage *message = [conversation createMessageWithContent:textContent];
 
