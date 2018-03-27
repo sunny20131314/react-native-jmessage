@@ -682,10 +682,14 @@ public class JMessageModule extends ReactContextBaseJavaModule {
         }
 
         content.setStringExtra("receiveId", id);
-        content.setStringExtra("sendAppkey", appKey);
+        content.setStringExtra("receiveAppKey", appKey);
         content.setStringExtra("type", isSingle);
         content.setStringExtra("sendId", sendId);
-        content.setStringExtra("receiveAppKey", data.getString("receiveAppKey"));
+        content.setStringExtra("sendAppkey", data.getString("sendAppkey"));
+
+        // 兼容v1.1 （老数据： id, appKey）
+        content.setStringExtra("id", id);
+        content.setStringExtra("appKey", appKey);
 
         final Message message = conversation.createSendMessage(content);
         message.setOnSendCompleteCallback(new BasicCallback() {

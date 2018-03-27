@@ -693,11 +693,16 @@ RCT_EXPORT_METHOD(removeConversation
                 // todo
                 NSString *single = @"2";
                 NSString *sendId = [data valueForKey:@"sendId"];
-                NSString *receiveAppKey = [data valueForKey:@"receiveAppKey"];
+                NSString *sendAppkey = [data valueForKey:@"sendAppkey"];
                 [textContent addStringExtra:sendId forKey:@"sendId"];
-                [textContent addStringExtra:appkey forKey:@"sendAppkey"];
-                [textContent addStringExtra:receiveAppKey forKey:@"receiveAppKey"];
+                [textContent addStringExtra:sendAppkey forKey:@"sendAppkey"];
+                [textContent addStringExtra:appkey forKey:@"receiveAppKey"];
                 [textContent addStringExtra:name forKey:@"receiveId"];
+
+                // 兼容v1.1 （老数据： id, appKey）
+                [textContent addStringExtra:appkey forKey:@"appkey"];
+                [textContent addStringExtra:name forKey:@"id"];
+
                 if ( isSingle == YES ) {
                     single = @"1";
                 }
